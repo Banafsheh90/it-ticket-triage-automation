@@ -1,0 +1,11 @@
+ticket_id,created_at,category,priority,status,description,requester_department
+1001,2026-05-01,Access,High,Open,User cannot access Jira after onboarding,Sales
+1002,2026-05-02,Application,Medium,Open,Salesforce and HubSpot contact sync failed,Marketing
+1003,2026-05-03,Hardware,Low,Open,External keyboard stopped working,Finance
+1004,2026-05-04,Onboarding,High,Open,New employee needs access to Google Workspace and Jira,HR
+1005,2026-05-05,Security,High,Open,Unusual login attempt reported for user account,IT
+1006,2026-05-06,Confluence,Medium,Open,User cannot edit restricted Confluence page,Product
+1007,2026-05-07,Access,Low,Closed,User requested access to shared drive,Operations
+1008,2026-05-08,Application,High,Open,Jira automation rule failed after workflow update,Engineering
+1009,2026-05-09,Onboarding,Medium,Open,New starter needs Salesforce and Confluence access,Sales
+1010,2026-05-10,Hardware,Medium,Open,Laptop blue screen reported during startup,Finance
