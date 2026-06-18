@@ -12,45 +12,56 @@ from report_writer import (
 )
 
 
-def main():
-    try:
-        tickets = load_tickets_from_csv("data/sample_tickets.csv")
-        validate_tickets(tickets)
+TICKET_DATA_FILE = "data/sample_tickets.csv"
+ROUTING_RULES_FILE = "config/routing_rules.json"
+SLA_RULES_FILE = "config/sla_rules.json"
 
-        routing_rules = load_routing_rules("config/routing_rules.json")
-        routed_tickets = assign_routing_queue(tickets, routing_rules)
+SUMMARY_JSON_OUTPUT = "output/ticket_summary.json"
+HIGH_PRIORITY_CSV_OUTPUT = "output/high_priority_tickets.csv"
+TEXT_SUMMARY_OUTPUT = "output/summary.txt"
 
-        sla_rules = load_sla_rules("config/sla_rules.json")
+DEMO_REFERENCE_DATE = datetime.strptime("2026-05-12", "%Y-%m-%d")
 
-        reference_date = datetime.strptime("2026-05-12", "%Y-%m-%d")
-        analyzed_tickets = add_sla_risk_status(
-            routed_tickets,
-            sla_rules,
-            reference_date
-        )
 
-        summary = generate_ticket_summary(analyzed_tickets)
+def load_and_analyze_tickets():
+    """
+    Load tickets, validate the input data, apply routing rules,
+    calculate SLA risk, and generate summary statistics.
+    """
+    tickets = load_tickets_from_csv(TICKET_DATA_FILE)
+    validate_tickets(tickets)
 
-        write_summary_to_json(summary, "output/ticket_summary.json")
-        write_high_priority_tickets_to_csv(
-            analyzed_tickets,
-            "output/high_priority_tickets.csv"
-        )
-        write_text_summary(summary, "output/summary.txt")
+    routing_rules = load_routing_rules(ROUTING_RULES_FILE)
+    routed_tickets = assign_routing_queue(tickets, routing_rules)
 
-    except FileNotFoundError as error:
-        print(f"File error: {error}")
-        return
+    sla_rules = load_sla_rules(SLA_RULES_FILE)
+    analyzed_tickets = add_sla_risk_status(
+        routed_tickets,
+        sla_rules,
+        DEMO_REFERENCE_DATE
+    )
 
-    except ValueError as error:
-        print(error)
-        return
+    summary = generate_ticket_summary(analyzed_tickets)
 
-    print("\nIT Ticket Triage Automation")
-    print("----------------------------")
-    print(f"Loaded, validated, routed, and analyzed tickets: {len(analyzed_tickets)}")
-    print("Reports generated in the output folder.\n")
+    return analyzed_tickets, summary
 
+
+def write_reports(analyzed_tickets, summary):
+    """
+    Write structured reports to the output folder.
+    """
+    write_summary_to_json(summary, SUMMARY_JSON_OUTPUT)
+    write_high_priority_tickets_to_csv(
+        analyzed_tickets,
+        HIGH_PRIORITY_CSV_OUTPUT
+    )
+    write_text_summary(summary, TEXT_SUMMARY_OUTPUT)
+
+
+def print_summary_section(summary):
+    """
+    Print the summary statistics in a readable terminal format.
+    """
     print("Summary")
     print("-------")
     print(f"Total tickets: {summary['total_tickets']}")
@@ -71,6 +82,11 @@ def main():
     for queue, count in summary["tickets_by_queue"].items():
         print(f"- {queue}: {count}")
 
+
+def print_detailed_tickets(analyzed_tickets):
+    """
+    Print analyzed ticket details in a readable terminal format.
+    """
     print("\nDetailed tickets")
     print("----------------")
 
@@ -86,6 +102,28 @@ def main():
             f"SLA risk: {ticket['sla_risk']} | "
             f"{ticket['description']}"
         )
+
+
+def main():
+    try:
+        analyzed_tickets, summary = load_and_analyze_tickets()
+        write_reports(analyzed_tickets, summary)
+
+    except FileNotFoundError as error:
+        print(f"File error: {error}")
+        return
+
+    except ValueError as error:
+        print(error)
+        return
+
+    print("\nIT Ticket Triage Automation")
+    print("----------------------------")
+    print(f"Loaded, validated, routed, and analyzed tickets: {len(analyzed_tickets)}")
+    print("Reports generated in the output folder.\n")
+
+    print_summary_section(summary)
+    print_detailed_tickets(analyzed_tickets)
 
 
 if __name__ == "__main__":
