@@ -5,6 +5,11 @@ from validator import validate_tickets
 from router import load_routing_rules, assign_routing_queue
 from sla_checker import load_sla_rules, add_sla_risk_status
 from summary import generate_ticket_summary
+from report_writer import (
+    write_summary_to_json,
+    write_high_priority_tickets_to_csv,
+    write_text_summary,
+)
 
 
 def main():
@@ -26,6 +31,13 @@ def main():
 
         summary = generate_ticket_summary(analyzed_tickets)
 
+        write_summary_to_json(summary, "output/ticket_summary.json")
+        write_high_priority_tickets_to_csv(
+            analyzed_tickets,
+            "output/high_priority_tickets.csv"
+        )
+        write_text_summary(summary, "output/summary.txt")
+
     except FileNotFoundError as error:
         print(f"File error: {error}")
         return
@@ -36,7 +48,8 @@ def main():
 
     print("\nIT Ticket Triage Automation")
     print("----------------------------")
-    print(f"Loaded, validated, routed, and analyzed tickets: {len(analyzed_tickets)}\n")
+    print(f"Loaded, validated, routed, and analyzed tickets: {len(analyzed_tickets)}")
+    print("Reports generated in the output folder.\n")
 
     print("Summary")
     print("-------")
