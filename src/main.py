@@ -4,6 +4,7 @@ from csv_loader import load_tickets_from_csv
 from validator import validate_tickets
 from router import load_routing_rules, assign_routing_queue
 from sla_checker import load_sla_rules, add_sla_risk_status
+from summary import generate_ticket_summary
 
 
 def main():
@@ -23,6 +24,8 @@ def main():
             reference_date
         )
 
+        summary = generate_ticket_summary(analyzed_tickets)
+
     except FileNotFoundError as error:
         print(f"File error: {error}")
         return
@@ -34,6 +37,29 @@ def main():
     print("\nIT Ticket Triage Automation")
     print("----------------------------")
     print(f"Loaded, validated, routed, and analyzed tickets: {len(analyzed_tickets)}\n")
+
+    print("Summary")
+    print("-------")
+    print(f"Total tickets: {summary['total_tickets']}")
+    print(f"Open tickets: {summary['open_tickets']}")
+    print(f"Closed tickets: {summary['closed_tickets']}")
+    print(f"High priority tickets: {summary['high_priority_tickets']}")
+    print(f"Tickets at SLA risk: {summary['sla_risk_tickets']}\n")
+
+    print("Tickets by category:")
+    for category, count in summary["tickets_by_category"].items():
+        print(f"- {category}: {count}")
+
+    print("\nTickets by priority:")
+    for priority, count in summary["tickets_by_priority"].items():
+        print(f"- {priority}: {count}")
+
+    print("\nTickets by suggested queue:")
+    for queue, count in summary["tickets_by_queue"].items():
+        print(f"- {queue}: {count}")
+
+    print("\nDetailed tickets")
+    print("----------------")
 
     for ticket in analyzed_tickets:
         print(
