@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from csv_loader import load_tickets_from_csv
+from github_api_loader import load_tickets_from_github_issues
 from validator import validate_tickets
 from router import load_routing_rules, assign_routing_queue
 from sla_checker import load_sla_rules, add_sla_risk_status
@@ -12,15 +13,60 @@ from report_writer import (
 )
 
 
+DATA_SOURCE = "csv"
+
 TICKET_DATA_FILE = "data/sample_tickets.csv"
 ROUTING_RULES_FILE = "config/routing_rules.json"
 SLA_RULES_FILE = "config/sla_rules.json"
+
+GITHUB_OWNER = "Banafsheh90"
+GITHUB_REPO = "it-ticket-triage-automation"
+GITHUB_ISSUE_STATE = "open"
+GITHUB_PER_PAGE = 10
 
 SUMMARY_JSON_OUTPUT = "output/ticket_summary.json"
 HIGH_PRIORITY_CSV_OUTPUT = "output/high_priority_tickets.csv"
 TEXT_SUMMARY_OUTPUT = "output/summary.txt"
 
-DEMO_REFERENCE_DATE = datetime.strptime("2026-05-12", "%Y-%m-%d")
+CSV_DEMO_REFERENCE_DATE = datetime.strptime("2026-05-12", "%Y-%m-%d")
+
+
+def load_ticket_data(data_source):
+    """
+    Load ticket data from the selected source.
+
+    Supported sources:
+    - csv
+    - github
+    """
+    if data_source == "csv":
+        return load_tickets_from_csv(TICKET_DATA_FILE)
+
+    if data_source == "github":
+        return load_tickets_from_github_issues(
+            GITHUB_OWNER,
+            GITHUB_REPO,
+            GITHUB_ISSUE_STATE,
+            GITHUB_PER_PAGE,
+        )
+
+    raise ValueError(
+        f"Unsupported data source: {data_source}. "
+        "Expected 'csv' or 'github'."
+    )
+
+
+def get_reference_date(data_source):
+    """
+    Return the reference date used for SLA calculations.
+
+    CSV demo data uses a fixed reference date for reproducible output.
+    GitHub API data uses today's date because GitHub issues are live data.
+    """
+    if data_source == "csv":
+        return CSV_DEMO_REFERENCE_DATE
+
+    return datetime.today()
 
 
 def load_and_analyze_tickets():
@@ -28,17 +74,19 @@ def load_and_analyze_tickets():
     Load tickets, validate the input data, apply routing rules,
     calculate SLA risk, and generate summary statistics.
     """
-    tickets = load_tickets_from_csv(TICKET_DATA_FILE)
+    tickets = load_ticket_data(DATA_SOURCE)
     validate_tickets(tickets)
 
     routing_rules = load_routing_rules(ROUTING_RULES_FILE)
     routed_tickets = assign_routing_queue(tickets, routing_rules)
 
     sla_rules = load_sla_rules(SLA_RULES_FILE)
+    reference_date = get_reference_date(DATA_SOURCE)
+
     analyzed_tickets = add_sla_risk_status(
         routed_tickets,
         sla_rules,
-        DEMO_REFERENCE_DATE
+        reference_date,
     )
 
     summary = generate_ticket_summary(analyzed_tickets)
@@ -53,7 +101,7 @@ def write_reports(analyzed_tickets, summary):
     write_summary_to_json(summary, SUMMARY_JSON_OUTPUT)
     write_high_priority_tickets_to_csv(
         analyzed_tickets,
-        HIGH_PRIORITY_CSV_OUTPUT
+        HIGH_PRIORITY_CSV_OUTPUT,
     )
     write_text_summary(summary, TEXT_SUMMARY_OUTPUT)
 
@@ -113,12 +161,17 @@ def main():
         print(f"File error: {error}")
         return
 
+    except ConnectionError as error:
+        print(f"Connection error: {error}")
+        return
+
     except ValueError as error:
         print(error)
         return
 
     print("\nIT Ticket Triage Automation")
     print("----------------------------")
+    print(f"Data source: {DATA_SOURCE}")
     print(f"Loaded, validated, routed, and analyzed tickets: {len(analyzed_tickets)}")
     print("Reports generated in the output folder.\n")
 
