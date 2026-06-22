@@ -1,14 +1,264 @@
 # IT Ticket Triage Automation
 
-A Python automation project that imports IT support tickets from CSV, validates and analyzes them, detects SLA risk, suggests routing queues, and generates structured reports.
+A Python automation project that simulates an IT support ticket triage workflow.
 
-This project uses synthetic sample ticket data created for demonstration purposes. No real company or user data is included.
+The project loads ticket data, validates the input, assigns routing queues, detects SLA risk, generates summary statistics, and writes structured reports. It uses a local CSV file as the default data source and also includes a GitHub Issues API loader for external ticket-like data ingestion.
 
-## Planned Features
+## Why this project
 
-- Load ticket data from CSV
+In IT operations and application support, tickets often need to be reviewed, categorized, routed to the right team, and monitored for SLA risk. This project shows how Python can be used to automate parts of that workflow in a structured and maintainable way.
+
+The project uses synthetic sample data for demonstration purposes. No real company, customer, or user data is included.
+
+## Features
+
+- Load ticket data from a local CSV file
 - Validate required fields and accepted values
-- Suggest routing queues based on ticket category
-- Detect SLA risk based on priority and ticket age
-- Generate JSON, CSV, and text reports
-- Extend input support to GitHub Issues API
+- Route tickets based on configurable category rules
+- Detect SLA risk based on ticket priority and ticket age
+- Generate summary statistics for operational reporting
+- Write reports to JSON, CSV, and TXT files
+- Load ticket-like data from GitHub Issues API
+- Normalize GitHub issues into the internal ticket format
+- Handle GitHub API errors such as missing repositories, forbidden access, and connection problems
+- Include basic tests for routing, SLA logic, summary generation, and GitHub label mapping
+
+## Tech stack
+
+- Python
+- CSV processing
+- JSON processing
+- GitHub REST API
+- Requests
+- Pytest
+- Git and GitHub
+
+## Project structure
+
+```text
+it-ticket-triage-automation/
+├── config/
+│   ├── routing_rules.json
+│   └── sla_rules.json
+├── data/
+│   └── sample_tickets.csv
+├── src/
+│   ├── csv_loader.py
+│   ├── github_api_loader.py
+│   ├── main.py
+│   ├── report_writer.py
+│   ├── router.py
+│   ├── sla_checker.py
+│   ├── summary.py
+│   └── validator.py
+├── tests/
+│   ├── test_github_api_loader.py
+│   ├── test_router.py
+│   ├── test_sla_checker.py
+│   └── test_summary.py
+├── .gitignore
+├── README.md
+└── requirements.txt
+```
+
+## Workflow
+
+```text
+CSV or GitHub Issues API
+↓
+Load ticket data
+↓
+Validate required fields and values
+↓
+Assign routing queues
+↓
+Calculate SLA risk
+↓
+Generate summary statistics
+↓
+Write reports
+```
+
+## Data sources
+
+### CSV data
+
+The default workflow uses synthetic ticket data from:
+
+```text
+data/sample_tickets.csv
+```
+
+The CSV file includes fields such as:
+
+```text
+ticket_id
+created_at
+category
+priority
+status
+description
+requester_department
+```
+
+Example CSV-style ticket:
+
+```text
+1001,2026-05-01,Access,High,Open,User cannot access Jira after onboarding,Sales
+```
+
+### GitHub Issues API
+
+The project also includes a GitHub Issues API loader. GitHub issues are converted into the same internal ticket format used by the CSV workflow.
+
+Example normalized GitHub issue:
+
+```python
+{
+    "ticket_id": "github-1",
+    "created_at": "2026-06-18",
+    "category": "Access",
+    "priority": "High",
+    "status": "Open",
+    "description": "User cannot access Jira",
+    "requester_department": "GitHub"
+}
+```
+
+The default data source remains CSV so the project can run locally without internet access.
+
+## Configuration
+
+Routing rules are stored in:
+
+```text
+config/routing_rules.json
+```
+
+Example:
+
+```json
+{
+    "Access": "IAM / Application Administration",
+    "Application": "Application Support",
+    "Hardware": "IT Support",
+    "Onboarding": "IT Operations",
+    "Security": "Security Review",
+    "Confluence": "Application Administration"
+}
+```
+
+SLA rules are stored in:
+
+```text
+config/sla_rules.json
+```
+
+Example:
+
+```json
+{
+    "High": 1,
+    "Medium": 3,
+    "Low": 5
+}
+```
+
+The numbers represent the allowed number of days before an open ticket is considered at SLA risk.
+
+## How to run
+
+Install dependencies:
+
+```bash
+pip3 install -r requirements.txt
+```
+
+Run the main workflow:
+
+```bash
+python3 src/main.py
+```
+
+Run the tests:
+
+```bash
+python3 -m pytest
+```
+
+## Example output
+
+```text
+IT Ticket Triage Automation
+----------------------------
+Data source: csv
+Loaded, validated, routed, and analyzed tickets: 10
+Reports generated in the output folder.
+
+Summary
+-------
+Total tickets: 10
+Open tickets: 9
+Closed tickets: 1
+High priority tickets: 4
+Tickets at SLA risk: 7
+```
+
+## Generated reports
+
+When the workflow runs, it generates reports in the `output/` folder:
+
+```text
+output/ticket_summary.json
+output/high_priority_tickets.csv
+output/summary.txt
+```
+
+These reports include:
+
+- A JSON summary for structured data consumption
+- A CSV file containing high-priority tickets
+- A human-readable TXT summary for quick review
+
+The `output/` folder is ignored by Git because these files are generated by the script.
+
+## Tests
+
+The project includes basic tests for core workflow logic:
+
+- SLA age calculation
+- SLA risk detection
+- Category-based routing
+- Summary statistics
+- GitHub label-to-priority mapping
+- GitHub label-to-category mapping
+- GitHub state-to-status mapping
+
+Run tests with:
+
+```bash
+python3 -m pytest
+```
+
+Expected result:
+
+```text
+11 passed
+```
+
+## Current limitations
+
+- The default workflow uses CSV data for reproducible local execution.
+- GitHub Issues API support is implemented, but the data source is currently selected in code.
+- The project uses synthetic demo data and simplified routing rules.
+- GitHub API authentication is not required for the current public repository use case.
+- Pagination for larger GitHub issue lists is not implemented yet.
+
+## Future improvements
+
+- Add command-line options for selecting the data source
+- Add support for authenticated GitHub API requests
+- Add pagination for larger GitHub issue lists
+- Add example output files in a separate examples folder
+- Add GitHub Actions to run tests automatically
+- Extend the workflow toward Jira or another ITSM tool
