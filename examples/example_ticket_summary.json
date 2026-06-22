@@ -1,0 +1,28 @@
+{
+    "total_tickets": 10,
+    "open_tickets": 9,
+    "closed_tickets": 1,
+    "high_priority_tickets": 4,
+    "sla_risk_tickets": 7,
+    "tickets_by_category": {
+        "Access": 2,
+        "Application": 2,
+        "Hardware": 2,
+        "Onboarding": 2,
+        "Security": 1,
+        "Confluence": 1
+    },
+    "tickets_by_priority": {
+        "High": 4,
+        "Medium": 4,
+        "Low": 2
+    },
+    "tickets_by_queue": {
+        "IAM / Application Administration": 2,
+        "Application Support": 2,
+        "IT Support": 2,
+        "IT Operations": 2,
+        "Security Review": 1,
+        "Application Administration": 1
+    }
+}

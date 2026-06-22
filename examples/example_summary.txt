@@ -1,0 +1,29 @@
+IT Ticket Triage Automation Report
+===================================
+
+Total tickets: 10
+Open tickets: 9
+Closed tickets: 1
+High priority tickets: 4
+Tickets at SLA risk: 7
+
+Tickets by category:
+- Access: 2
+- Application: 2
+- Hardware: 2
+- Onboarding: 2
+- Security: 1
+- Confluence: 1
+
+Tickets by priority:
+- High: 4
+- Medium: 4
+- Low: 2
+
+Tickets by suggested queue:
+- IAM / Application Administration: 2
+- Application Support: 2
+- IT Support: 2
+- IT Operations: 2
+- Security Review: 1
+- Application Administration: 1

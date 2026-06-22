@@ -1,0 +1,5 @@
+ticket_id,created_at,category,priority,status,suggested_queue,ticket_age_days,sla_limit_days,sla_risk,description,requester_department
+1001,2026-05-01,Access,High,Open,IAM / Application Administration,11,1,Yes,User cannot access Jira after onboarding,Sales
+1004,2026-05-04,Onboarding,High,Open,IT Operations,8,1,Yes,New employee needs access to Google Workspace and Jira,HR
+1005,2026-05-05,Security,High,Open,Security Review,7,1,Yes,Unusual login attempt reported for user account,IT
+1008,2026-05-08,Application,High,Open,Application Support,4,1,Yes,Jira automation rule failed after workflow update,Engineering
