@@ -17,7 +17,35 @@ def fetch_repository_issues(owner, repo, state="open", per_page=10):
         "per_page": per_page,
     }
 
-    response = requests.get(url, params=params, timeout=10)
+    try:
+        response = requests.get(url, params=params, timeout=10)
+
+    except requests.exceptions.Timeout as error:
+        raise ConnectionError(
+            "GitHub API request timed out. Please try again later."
+        ) from error
+
+    except requests.exceptions.ConnectionError as error:
+        raise ConnectionError(
+            "Could not connect to GitHub API. Please check your internet connection."
+        ) from error
+
+    except requests.exceptions.RequestException as error:
+        raise ConnectionError(
+            f"GitHub API request failed: {error}"
+        ) from error
+
+    if response.status_code == 404:
+        raise ValueError(
+            f"GitHub repository not found: {owner}/{repo}. "
+            "Please check the owner and repository name."
+        )
+
+    if response.status_code == 403:
+        raise ValueError(
+            "GitHub API access was forbidden. This may be caused by rate limits "
+            "or missing permissions."
+        )
 
     if response.status_code != 200:
         raise ValueError(
@@ -26,6 +54,11 @@ def fetch_repository_issues(owner, repo, state="open", per_page=10):
         )
 
     issues = response.json()
+
+    if not isinstance(issues, list):
+        raise ValueError(
+            "Unexpected GitHub API response format. Expected a list of issues."
+        )
 
     real_issues = [
         issue for issue in issues
@@ -121,6 +154,9 @@ def load_tickets_from_github_issues(owner, repo, state="open", per_page=10):
     Load GitHub issues and normalize them into the internal ticket format.
     """
     issues = fetch_repository_issues(owner, repo, state, per_page)
+
+    if not issues:
+        return []
 
     tickets = [
         normalize_github_issue(issue)
