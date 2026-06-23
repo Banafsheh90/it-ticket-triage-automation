@@ -231,7 +231,7 @@ examples/example_summary.txt
 
 ## Tests
 
-The project includes basic tests for core workflow logic:
+The project includes basic tests for the core workflow logic:
 
 - SLA age calculation
 - SLA risk detection
@@ -241,7 +241,7 @@ The project includes basic tests for core workflow logic:
 - GitHub label-to-category mapping
 - GitHub state-to-status mapping
 
-Run tests with:
+Run tests locally with:
 
 ```bash
 python3 -m pytest
@@ -252,6 +252,8 @@ Expected result:
 ```text
 11 passed
 ```
+
+Tests are also run automatically with GitHub Actions on every push and pull request.
 
 ## Current limitations
 
